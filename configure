@@ -1,0 +1,80 @@
+###################################
+# Default ENV VAR
+###################################
+
+CC='mpicc'
+FC='mpif90'
+
+# check the existence of directory `defs/`
+if [ ! -d "defs" ]; then
+    mkdir defs
+fi
+CONFIGFILE=defs/maverick
+if [ -f ${CONFIGFILE} ]; then
+    bash -c "rm ${CONFIGFILE}"
+fi
+
+echo "##########################" > ${CONFIGFILE}
+echo "# System definitions" >> ${CONFIGFILE}
+echo "##########################" >> ${CONFIGFILE}
+
+echo >> ${CONFIGFILE}
+
+#########################
+# CONFIGURE GFORTRAN FLASG BASED ON GNU VERSION
+#########################
+echo "FC=${FC}">> ${CONFIGFILE}
+GCC_VERSION=$(${CC} --version | awk '/gcc/ {print $3+0}')
+
+if [ $(echo "${GCC_VERSION} >= 10.0" | bc -l) -eq 1 ];
+then
+    echo "FFLAGS:=-O3 -g -fPIC -fbounds-check -fcheck=mem -fallow-argument-mismatch" >> ${CONFIGFILE}
+else
+    echo "FFLAGS:=-O2 -g -fPIC -fbounds-check -fcheck=mem" >> ${CONFIGFILE}
+fi
+
+echo >> ${CONFIGFILE}
+echo "CC=${CC}">> ${CONFIGFILE}
+echo "CFLAGS:=-O2 -g -fPIC " >> ${CONFIGFILE}
+
+#########################
+# CONFIGURE INC & LIB 
+#########################
+
+echo >> ${CONFIGFILE}
+echo  "LIBS=" >> ${CONFIGFILE}
+echo  "INC=" >> ${CONFIGFILE}
+
+#########################
+# CONFIGURE MPI FLAGS 
+#########################
+
+echo >> ${CONFIGFILE}
+MPI_FLAGS=$(${FC} -show | sed 's/[^ ]* //')
+echo "MPI_FLAGS=${MPI_FLAGS}" >> ${CONFIGFILE}
+# GOT_ERR=$(${CC} -showme:link 2> /dev/null | wc -l)
+# if [ $GOT_ERR != 0 ]; then
+# 	MPI_COMPILE_FLAGS=$(${FC} -showme:compile)
+# 	MPI_LINK_FLAGS=$(${FC} -showme:link)
+# else
+# 	MPI_COMPILE_FLAGS=$(${FC} -compile_info | sed 's/[^ ]* //')
+# 	MPI_LINK_FLAGS=$(${FC} -link_info | sed 's/[^ ]* //')
+# fi
+
+
+# echo "MPI_COMPILE_FLAGS=${MPI_COMPILE_FLAGS}" >> ${CONFIGFILE}
+# echo "MPI_LINK_FLAGS=${MPI_LINK_FLAGS}" >> ${CONFIGFILE}
+
+echo >> ${CONFIGFILE}
+echo >> ${CONFIGFILE}
+echo "##########################" >> ${CONFIGFILE}
+echo "# PATH" >> ${CONFIGFILE}
+echo "##########################" >> ${CONFIGFILE}
+
+
+echo "DIRECTORY:=${PWD}">> ${CONFIGFILE}
+echo "DEST:=${PWD}/bin">> ${CONFIGFILE}
+echo >> ${CONFIGFILE}
+
+
+cat ${CONFIGFILE}

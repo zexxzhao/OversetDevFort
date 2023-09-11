@@ -1,0 +1,38 @@
+  MODFILES = modules.f90
+  
+  F90FILES =\
+  alloc.f90\
+  assembleNavSto.f90\
+  BCLhs_3D.f90\
+  ctypes.f90\
+  cname.f90\
+  commu.f90\
+  e3LHS.f90\
+  e3RHS.f90\
+  e3STAB.f90\
+  e3int.f90\
+  eval_shape.f90\
+  eval_shape_FEM.f90\
+  driver.f90\
+  FaceAssembly_weak.f90\
+  FillSparseMat.f90\
+  genGP_GW.f90\
+  genSparStruc.f90\
+  input.f90\
+  interpolation.f90\
+  iosol.f90\
+  LocaltoGlobal.f90\
+  param.f90\
+  setBCs.f90\
+  SparseGMRES_NS.f90\
+  SparseProd.f90\
+  solveOverset.f90
+
+
+F77SRCFILES =
+  #stab_conv.f
+  #SparseGMRES_mesh.f
+  #SparseGMRES_ls.f
+  #SparseGMRES_NS_conv.f
+  #IntElmAss_NS_conv.f
+  
