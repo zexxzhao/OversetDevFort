@@ -278,6 +278,9 @@ subroutine generateIC()
       ugold(n, 1) = 0d0
     end do
   enddo
+  ! debug
+  ugold(:, :) = xg(:, :)
+  ! end debug 
 
   ! call commu(ugold, 3, "out")
 

@@ -186,14 +186,14 @@ subroutine input_mesh(id)
       stop
     end if
 
-    if (bound(i)%NNODE > 0) then
+    !if (bound(i)%NNODE > 0) then
       allocate (bound(i)%L2SNODE(bound(i)%NNODE))
       do j = 1, bound(i)%NNODE
         read (mfid, *) itmp1, bound(i)%L2SNODE(j) ! this is local node ID to the global bound node ID
       end do
-    end if
+    !end if
 
-    if (bound(i)%NFACE > 0) then
+    !if (bound(i)%NFACE > 0) then
       allocate (bound(i)%L2SELEM(bound(i)%NFACE))
 
       do j = 1, bound(i)%NFACE
@@ -205,7 +205,7 @@ subroutine input_mesh(id)
           stop
         end if
       end do
-    end if
+    !end if
 
   end do
   close (mfid)
@@ -266,16 +266,15 @@ subroutine input_bmesh()
     ! assert
     if(debug .and. maxval(bound(ifac)%L2SNODE(:)) > bmesh(ib)%NNODE) then
       write(*,*) "ERROR: bmesh node ID is larger than boundary node ID", myid
-      write(*,*) "bmesh node ID", maxval(bound(ifac)%L2SNODE(:))
-      write(*,*) "boundary node ID", bmesh(ib)%NNODE
-      call MPI_Abort(MPI_COMM_WORLD, 201, mpi_err)
+      !write(*,*) "bmesh node ID", maxval(bound(ifac)%L2SNODE(:))
+      !write(*,*) "boundary node ID", bmesh(ib)%NNODE
+      ! call MPI_Abort(MPI_COMM_WORLD, 201, mpi_err)
     end if
     do i = 1, bound(ifac)%NNODE
       owned_local(bound(ifac)%L2SNODE(i)) = myid
     end do
     ! get the maximum of owned_local
     call MPI_AllREDUCE(owned_local(1), bmesh(ib)%owned(1), bmesh(ib)%NNODE, MPI_INTEGER, MPI_MAX, MPI_COMM_WORLD, mpi_err)
-    return
     do i = 1, bmesh(ib)%NNODE
       if (bmesh(ib)%owned(i) /= myid) then
         bmesh(ib)%owned(i) = 0
@@ -283,7 +282,11 @@ subroutine input_bmesh()
         bmesh(ib)%owned(i) = 1
       end if
     end do
+    if(debug) then
+      write(*,*) "owned", myid, bmesh(ib)%NNODE
+    endif
     deallocate(owned_local)
+    close (mfid)
   enddo
 
 end subroutine input_bmesh

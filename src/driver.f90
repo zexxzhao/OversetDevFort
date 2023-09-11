@@ -53,10 +53,12 @@ program NURBScode
   ! Get initial condition
   if (Rstep == 0) then
     call generateIC()
+    call setBCs_overset(3)
     call writeSol(Rstep)
   else
     call readSol(Rstep)
   end if
+  return 
 
   !------------------------------------------
   ! Loop over time steps

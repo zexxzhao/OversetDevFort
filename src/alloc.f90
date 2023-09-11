@@ -153,6 +153,8 @@ subroutine deallocMatVec
     deallocate (bound(i)%F2E)
     deallocate (bound(i)%FACE_OR)
     deallocate (bound(i)%BNODES)
+    deallocate (bound(i)%L2SNODE)
+    deallocate (bound(i)%L2SELEM)
   end do
   deallocate (bound)
 

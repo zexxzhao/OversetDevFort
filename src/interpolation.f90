@@ -17,6 +17,7 @@ subroutine interpolation_tet(mesh_id)
   real(8) :: Amat(3, 3), Ainv(3, 3), bvec(3), xvec(4), tmp
   integer :: found(bmesh(mesh_id)%NNODE)
   real(8) :: ug_local(bmesh(mesh_id)%NNODE, NSD)
+  logical :: detected
   found(:) = 0
   bmesh(mesh_id)%ug(:, :) = 0d0
   ug_local(:, :) = 0d0
@@ -49,12 +50,21 @@ subroutine interpolation_tet(mesh_id)
         + bmesh(mesh_id)%dg(j, :)
       xvec(1:3) = matmul(Ainv, bvec)
       xvec(4) = 1d0 - sum(xvec(1:3))
-      if(all((/(xvec(i) >= 0, i = 1, 4)/))) then
+      detected = all((/(xvec(i) >= 0, i = 1, 4)/))
+      if(detected) then
         ug_local(j, :) = ug_local(j, :) + xvec(1) * ug(IEN(iel, 1), :)
         ug_local(j, :) = ug_local(j, :) + xvec(2) * ug(IEN(iel, 2), :)
         ug_local(j, :) = ug_local(j, :) + xvec(3) * ug(IEN(iel, 3), :)
         ug_local(j, :) = ug_local(j, :) + xvec(4) * ug(IEN(iel, 4), :)
         found(j) = found(j) + 1
+      endif
+      if(detected) then
+        write(*,*) "detected element ", myid, iel, j
+        write(*,*) "cell ", xl + dl
+        write(*,*) "node ", bmesh(mesh_id)%xg(j, :) + bmesh(mesh_id)%dg(j, :)
+        write(*,*) "value ", ug(IEN(iel, 1), :), ug(IEN(iel, 2), :), &
+          ug(IEN(iel, 3), :), ug(IEN(iel, 4), :)
+        write(*,*) "interp ", ug_local(:, :)
       endif
     enddo
   enddo

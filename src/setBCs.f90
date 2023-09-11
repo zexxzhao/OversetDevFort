@@ -123,6 +123,7 @@ end subroutine setBCs_CFD
 
 subroutine setBCs_overset(subdomain_flag)
   use commonvars
+  use commonpars
   use aAdjkeep
   use mpi
 
@@ -130,25 +131,39 @@ subroutine setBCs_overset(subdomain_flag)
 
   integer, intent(in) :: subdomain_flag
   integer :: b, i, j, k, n, d, dir, ptmp, iface, global_index
+  integer :: ifac, isub
+  real(8) :: ug_tmp(NSD)
 
   call setBCs_CFD()
 
-  ! check if zero out subdomain one
-  if(iand(subdomain_flag, 1) == 0) then
+  do isub = 1, NRES
+    if(iand(subdomain_flag, ishft(1, isub-1)) == 0) cycle
+    ! zero out RHS of the other subdomain
     do i = 1, NNODE
-      if(NodeID(i) == ELM_ID_SET(1)) then
+      if(NodeID(i) == ELM_ID_SET(3-isub)) then
         IBC(i, 1:4) = 1
       endif
     enddo
-  endif
-  if(iand(subdomain_flag, 2) == 0) then
-    do i = 1, NNODE
-      if(NodeID(i) == ELM_ID_SET(2)) then
-        IBC(i, 1:4) = 1
+    ! apply Dirichlet BCs of ug onto the alternatint subdomain
+    ! 1. find the face ID of the alternating surface
+    do b = 1, NBOUND
+      if(bound(b)%FACE_ID == BMESH_ID_SET(isub)) then
+        ifac = b
+        exit
       endif
     enddo
-  endif
-
+    ! 2. project the solution onto the alternating surface
+    call interpolation_tet(isub)
+    ! 3. apply the BCs
+    do i = 1, bound(ifac)%NNODE
+      k = bound(ifac)%BNODES(i)
+      ug_tmp(:) = bmesh(isub)%ug(bound(ifac)%L2SNODE(i),:)
+      IBC(k, 1:3) = 1
+      ug(k, 1:3) = ug_tmp(:)
+      acg(k, 1:3) = ((ug_tmp(:) - ugold(k, 1:3))*Dtgl &
+                     + (gami - 1.0d0)*acgold(k, 1:3))/gami
+    enddo
+  enddo
 end subroutine setBCs_overset
 
 !======================================================================
